@@ -1,10 +1,10 @@
 
 var config = {};
 
-//config.searchServer = "sanmateo-32.dev.oclc.org";
-config.searchServer = "localhost";
+config.searchServer = "sanmateo-32.dev.oclc.org";
+//config.searchServer = "localhost";
 config.searchPort = 9200;
-config.appPort = 3000;
+config.appPort = 3600;
 
 config.httpStatus = "200";
 config.contentTypes = {};
@@ -15,6 +15,7 @@ config.contentTypes.html = "text/html";
 config.contentTypes.octetstream = "application/octet-stream";
 
 config.action = {};
+config.action.range_search = true;
 config.action.search = true;
 config.action.get = true;
 config.action.aggregate = true;

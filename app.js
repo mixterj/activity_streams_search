@@ -110,11 +110,11 @@ app.get('/', function (req, res) {
         if (config.action[req.query.action]) {
         	
         	  if (req.query.action === "aggregate") {
-        		  toDate = {}
-        		  fromDate = {};
+        		  var bucket1Date = {};
+        		  var bucket2Date = {};
         		  if (req.query.to && req.query.from) { 
-        			  toDate.to = req.query.to;
-        			  fromDate.from = req.query.from
+        			  bucket1Date.to = req.query.to;
+        			  bucket2Date.from = req.query.from;
         		  } 
         		  
         		  // build query
@@ -124,19 +124,45 @@ app.get('/', function (req, res) {
         		  bodyObject.aggs.range.date_range = {};
         		  bodyObject.aggs.range.date_range.field = "published";
         		  bodyObject.aggs.range.date_range.format = "strict_date_optional_time||epoch_millis";
-        		  bodyObject.aggs.range.date_range.ranges.push(toDate);
-        		  bodyObject.aggs.range.date_range.ranges.push(fromDate);
+        		  bodyObject.aggs.range.date_range.ranges = [];
+        		  bodyObject.aggs.range.date_range.ranges.push(bucket1Date);
+        		  bodyObject.aggs.range.date_range.ranges.push(bucket2Date);
         		  
               // send the search and handle the elasticsearch response
               doSearch(res,{  
-                  index: req.query.index,
-                  type: req.query.type,
+                  index: 'activity_streams',
+                  type: 'activities',
                   body: bodyObject
                 });
         		  
-        	  }
-    
-        	  else if (req.query.action === "search") {
+        	  } else if (req.query.action ==="range_search"){
+        		  console.log('made it to search');
+        		  var toDate = '';
+        		  var fromDate = '';
+        		  if (req.query.to && req.query.from) { 
+        			  toDate = req.query.to;
+        			  fromDate = req.query.from;
+        		  } 
+        		  
+        		  // build query
+        		  bodyObject = {};
+        		  bodyObject.query = {};
+        		  bodyObject.query.filtered = {};
+        		  bodyObject.query.filtered.filter = {};
+        		  bodyObject.query.filtered.filter.range = {};
+        		  bodyObject.query.filtered.filter.range.published = {};
+        		  bodyObject.query.filtered.filter.range.published.gte = fromDate;
+        		  bodyObject.query.filtered.filter.range.published.lte = toDate;
+        		  console.log(bodyObject);
+        		  
+              // send the search and handle the elasticsearch response
+              doSearch(res,{  
+                  index: 'activity_streams',
+                  type: 'activities',
+                  body: bodyObject
+                });
+        		  
+        	  } else if (req.query.action === "search") {
 
         	// get query terms
             query = "*";

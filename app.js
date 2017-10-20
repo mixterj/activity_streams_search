@@ -136,7 +136,6 @@ app.get('/', function (req, res) {
                 });
         		  
         	  } else if (req.query.action ==="range_search"){
-        		  console.log('made it to search');
         		  var toDate = '';
         		  var fromDate = '';
         		  if (req.query.to && req.query.from) { 
@@ -153,7 +152,6 @@ app.get('/', function (req, res) {
         		  bodyObject.query.filtered.filter.range.published = {};
         		  bodyObject.query.filtered.filter.range.published.gte = fromDate;
         		  bodyObject.query.filtered.filter.range.published.lte = toDate;
-        		  console.log(bodyObject);
         		  
               // send the search and handle the elasticsearch response
               doSearch(res,{  

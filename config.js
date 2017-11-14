@@ -4,7 +4,7 @@ var config = {};
 config.searchServer = "sanmateo-32.dev.oclc.org";
 //config.searchServer = "localhost";
 config.searchPort = 9200;
-config.appPort = 3600;
+config.appPort = 3061;
 
 config.httpStatus = "200";
 config.contentTypes = {};

@@ -43,17 +43,32 @@ function sendResponse(res,obj) {
 }
 
 //handle search engine response
-function handleResponse(res, error, response) {
+function handleResponse(res, error, jsonld) {
     if (error){
-        errorObject.json = "{ \"error\": "+error+" }";
+        errorObject.json = "{ \"error\": "+JSON.stringify(error)+" }";
         sendResponse(res,errorObject);
       } else {
         // object to hold response properties
         var obj = {};
-        obj.contentType = config.contentTypes.json; 
+        
+        // CHANGE = Made content type jsonld 
+        obj.contentType = config.contentTypes.jsonld; 
         obj.status = "200";
-        obj.json = JSON.stringify(response);
-	      sendResponse(res,obj);
+        if (req.query.action === 'get'){
+        		var jsonld = response['_source'];
+            jsonld['@context'] = "https://www.w3.org/ns/activitystreams"; 
+        }
+        else {
+	        	var jsonld = {};
+	        jsonld['@context'] = "https://www.w3.org/ns/activitystreams"; 
+	        jsonld.type = "Collection";
+	        jsonld.items = [];
+	        response.hits.hits.map(function(hit){
+	            		jsonld.items.push(hit._source);
+	            });
+        }
+        obj.json = JSON.stringify(jsonld);
+	    sendResponse(res,obj);
       }
 }
 
@@ -99,7 +114,7 @@ app.all('/*', function(req, res, next) {
 
 // handle GET request patterns
 app.get('/', function (req, res) {
-
+    
       // look for a query parameter named "action"
       if (req.query.action) {
   
@@ -108,13 +123,14 @@ app.get('/', function (req, res) {
   
         // test whether the action parameter value is known
         if (config.action[req.query.action]) {
+        
         	
         	  if (req.query.action === "aggregate") {
         		  var bucket1Date = {};
         		  var bucket2Date = {};
-        		  if (req.query.to && req.query.from) { 
-        			  bucket1Date.to = req.query.to;
-        			  bucket2Date.from = req.query.from;
+        		  if (req.query.toDate && req.query.fromDate) { 
+        			  bucket1Date.to = req.query.toDate;
+        			  bucket2Date.from = req.query.fromDate;
         		  } 
         		  
         		  // build query
@@ -138,11 +154,23 @@ app.get('/', function (req, res) {
         	  } else if (req.query.action ==="range_search"){
         		  var toDate = '';
         		  var fromDate = '';
-        		  if (req.query.to && req.query.from) { 
-        			  toDate = req.query.to;
-        			  fromDate = req.query.from;
+        		  if (req.query.toDate && req.query.fromDate) { 
+        			  toDate = req.query.toDate;
+        			  fromDate = req.query.fromDate
         		  } 
         		  
+         		 // get results size
+                  var sizeNum = 100;
+                  if (req.query.size) { 
+                    sizeNum = req.query.size;
+                  }
+               
+                  // get result starting position
+                  var fromNum = 0;
+                  if (req.query.from) { 
+                  		fromNum = req.query.from;
+                  }
+     		  
         		  // build query
         		  bodyObject = {};
         		  bodyObject.query = {};
@@ -152,6 +180,8 @@ app.get('/', function (req, res) {
         		  bodyObject.query.filtered.filter.range.published = {};
         		  bodyObject.query.filtered.filter.range.published.gte = fromDate;
         		  bodyObject.query.filtered.filter.range.published.lte = toDate;
+        		  bodyObject.size = sizeNum;
+        		  bodyObject.from = fromNum;
         		  
               // send the search and handle the elasticsearch response
               doSearch(res,{  
@@ -168,19 +198,6 @@ app.get('/', function (req, res) {
             
             // protect double quotes for phrase searches
             query = query.replace('"','\"');
-            
-            
-            // get results size
-            var sizeNum = 10;
-            if (req.query.size) { 
-              sizeNum = req.query.size;
-            }
-            
-            // get result starting position
-            var fromNum = 0;
-            if (req.query.from) { 
-            		fromNum = req.query.from;
-            }
          
             
             // build the request body
@@ -196,8 +213,8 @@ app.get('/', function (req, res) {
             
             // send the search and handle the elasticsearch response
             doSearch(res,{  
-                index: req.query.index,
-                type: req.query.type,
+                index: 'activity_streams',
+                type: 'activities',
                 body: bodyObject
               });
         		
@@ -209,8 +226,8 @@ app.get('/', function (req, res) {
             	
               // send the get request and handle the elasticsearch response
               doGet(res,{  
-                index: req.query.index,
-                type:req.query.type,
+                index: 'activity_streams',
+                type: 'activities',
                 id: req.query.id
               });
 

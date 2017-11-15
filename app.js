@@ -43,7 +43,7 @@ function sendResponse(res,obj) {
 }
 
 //handle search engine response
-function handleResponse(res, error, jsonld) {
+function handleResponse(req, res, error, response) {
     if (error){
         errorObject.json = "{ \"error\": "+JSON.stringify(error)+" }";
         sendResponse(res,errorObject);
@@ -56,15 +56,21 @@ function handleResponse(res, error, jsonld) {
         obj.status = "200";
         if (req.query.action === 'get'){
         		var jsonld = response['_source'];
-            jsonld['@context'] = "https://www.w3.org/ns/activitystreams"; 
+        		jsonld['@context'] = {};
+            jsonld['@context']['as'] = "https://www.w3.org/ns/activitystreams";
+            jsonld['@context']['sc'] = "http://iiif.io/api/presentation/2/context.json";
         }
         else {
 	        	var jsonld = {};
-	        jsonld['@context'] = "https://www.w3.org/ns/activitystreams"; 
-	        jsonld.type = "Collection";
-	        jsonld.items = [];
+	        	jsonld['@context'] = {};
+	        jsonld['@context']['as'] = "https://www.w3.org/ns/activitystreams";
+	        jsonld['@context']['sc'] = "http://iiif.io/api/presentation/2/context.json";
+	        jsonld.type = "as:Collection";
+	        jsonld['as:items'] = [];
 	        response.hits.hits.map(function(hit){
-	            		jsonld.items.push(hit._source);
+	        	        jsonld['as:items'].push(hit._source);
+	        	        //items = jsonld['as:items']
+	            		//items.push(hit._source);
 	            });
         }
         obj.json = JSON.stringify(jsonld);
@@ -73,16 +79,16 @@ function handleResponse(res, error, jsonld) {
 }
 
 // initiate search engine search request
-function doSearch(res,obj) {
+function doSearch(req, res,obj) {
     client.search(obj,function (error, response, status) {
-    	handleResponse(res,error, response);
+    	handleResponse(req, res,error, response);
       });
 }
 
 // initiate search engine get request
-function doGet(res,obj) {
+function doGet(req, res,obj) {
     client.get(obj,function (error, response, status) {
-    	handleResponse(res,error, response);
+    	handleResponse(req, res,error, response);
       });
 }
 
@@ -145,7 +151,7 @@ app.get('/', function (req, res) {
         		  bodyObject.aggs.range.date_range.ranges.push(bucket2Date);
         		  
               // send the search and handle the elasticsearch response
-              doSearch(res,{  
+              doSearch(req, res,{  
                   index: 'activity_streams',
                   type: 'activities',
                   body: bodyObject
@@ -184,7 +190,7 @@ app.get('/', function (req, res) {
         		  bodyObject.from = fromNum;
         		  
               // send the search and handle the elasticsearch response
-              doSearch(res,{  
+              doSearch(req, res,{  
                   index: 'activity_streams',
                   type: 'activities',
                   body: bodyObject
@@ -212,7 +218,7 @@ app.get('/', function (req, res) {
             bodyObject.from = fromNum;
             
             // send the search and handle the elasticsearch response
-            doSearch(res,{  
+            doSearch(req, res,{  
                 index: 'activity_streams',
                 type: 'activities',
                 body: bodyObject
@@ -225,7 +231,7 @@ app.get('/', function (req, res) {
             if (req.query.id) {
             	
               // send the get request and handle the elasticsearch response
-              doGet(res,{  
+              doGet(req, res,{  
                 index: 'activity_streams',
                 type: 'activities',
                 id: req.query.id

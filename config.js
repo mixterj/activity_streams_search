@@ -5,6 +5,8 @@ var config = {};
 config.searchServer = "localhost";
 config.searchPort = 9200;
 config.appPort = 3061;
+config.indexName = 'activity_streams';
+config.docType = 'activities';	
 
 config.httpStatus = "200";
 config.contentTypes = {};

@@ -147,8 +147,8 @@ app.get('/', function (req, res) {
         		  
               // send the search and handle the elasticsearch response
               doSearch(req, res,{  
-                  index: 'activity_streams',
-                  type: 'activities',
+                  index: config.indexName,
+                  type: config.docType,
                   body: bodyObject
                 });
         		  
@@ -186,8 +186,8 @@ app.get('/', function (req, res) {
         		  
               // send the search and handle the elasticsearch response
               doSearch(req, res,{  
-                  index: 'activity_streams',
-                  type: 'activities',
+            	  	index: config.indexName,
+                  type: config.docType,
                   body: bodyObject
                 });
         		  
@@ -214,8 +214,8 @@ app.get('/', function (req, res) {
             
             // send the search and handle the elasticsearch response
             doSearch(req, res,{  
-                index: 'activity_streams',
-                type: 'activities',
+            	    index: config.indexName,
+                type: config.docType,
                 body: bodyObject
               });
         		
@@ -227,8 +227,8 @@ app.get('/', function (req, res) {
             	
               // send the get request and handle the elasticsearch response
               doGet(req, res,{  
-                index: 'activity_streams',
-                type: 'activities',
+            	    index: config.indexName,
+                type: config.docType,
                 id: req.query.id
               });
 

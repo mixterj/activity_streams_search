@@ -55,22 +55,17 @@ function handleResponse(req, res, error, response) {
         obj.contentType = config.contentTypes.jsonld; 
         obj.status = "200";
         if (req.query.action === 'get'){
-        		var jsonld = response['_source'];
-        		jsonld['@context'] = {};
-            jsonld['@context']['as'] = "https://www.w3.org/ns/activitystreams";
-            jsonld['@context']['sc'] = "http://iiif.io/api/presentation/2/context.json";
-        }
+            var jsonld = response['_source'];
+            jsonld['@context'] = ["https://www.w3.org/ns/activitystreams", "http://iiif.io/api/presentation/2/context.json"];
+	    }
         else {
-	        	var jsonld = {};
-	        	jsonld['@context'] = {};
-	        jsonld['@context']['as'] = "https://www.w3.org/ns/activitystreams";
-	        jsonld['@context']['sc'] = "http://iiif.io/api/presentation/2/context.json";
-	        jsonld.type = "as:Collection";
-	        jsonld['as:items'] = [];
+	        var jsonld = {};
+	        jsonld['@context'] = ["https://www.w3.org/ns/activitystreams", "http://iiif.io/api/presentation/2/context.json"];
+	        jsonld.type = "Collection";
+	        jsonld.items = [];
 	        response.hits.hits.map(function(hit){
-	        	        jsonld['as:items'].push(hit._source);
-	        	        //items = jsonld['as:items']
-	            		//items.push(hit._source);
+	        	        jsonld.items.push(hit._source);
+	        	    
 	            });
         }
         obj.json = JSON.stringify(jsonld);
@@ -144,7 +139,7 @@ app.get('/', function (req, res) {
         		  bodyObject.aggs = {};
         		  bodyObject.aggs.range = {};
         		  bodyObject.aggs.range.date_range = {};
-        		  bodyObject.aggs.range.date_range.field = "published";
+        		  bodyObject.aggs.range.date_range.field = "startTime";
         		  bodyObject.aggs.range.date_range.format = "strict_date_optional_time||epoch_millis";
         		  bodyObject.aggs.range.date_range.ranges = [];
         		  bodyObject.aggs.range.date_range.ranges.push(bucket1Date);
@@ -183,9 +178,9 @@ app.get('/', function (req, res) {
         		  bodyObject.query.filtered = {};
         		  bodyObject.query.filtered.filter = {};
         		  bodyObject.query.filtered.filter.range = {};
-        		  bodyObject.query.filtered.filter.range.published = {};
-        		  bodyObject.query.filtered.filter.range.published.gte = fromDate;
-        		  bodyObject.query.filtered.filter.range.published.lte = toDate;
+        		  bodyObject.query.filtered.filter.range.startTime = {};
+        		  bodyObject.query.filtered.filter.range.startTime.gte = fromDate;
+        		  bodyObject.query.filtered.filter.range.startTime.lte = toDate;
         		  bodyObject.size = sizeNum;
         		  bodyObject.from = fromNum;
         		  

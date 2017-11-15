@@ -1,8 +1,8 @@
 
 var config = {};
 
-config.searchServer = "sanmateo-32.dev.oclc.org";
-//config.searchServer = "localhost";
+//config.searchServer = "sanmateo-32.dev.oclc.org";
+config.searchServer = "localhost";
 config.searchPort = 9200;
 config.appPort = 3061;
 

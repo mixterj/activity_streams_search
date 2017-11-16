@@ -1,6 +1,6 @@
 
 
-# Activity Streams Search API
+# IIIF Activity Streams Search API
 
 
 

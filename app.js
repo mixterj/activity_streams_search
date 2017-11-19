@@ -125,6 +125,17 @@ app.get('/', function (req, res) {
         // test whether the action parameter value is known
         if (config.action[req.query.action]) {
         
+        	// get results size
+            var sizeNum = 100;
+            if (req.query.size) { 
+              sizeNum = req.query.size;
+            }
+         
+            // get result starting position
+            var fromNum = 0;
+            if (req.query.from) { 
+            		fromNum = req.query.from;
+            }
         	
         	  if (req.query.action === "aggregate") {
         		  var bucket1Date = {};
@@ -159,18 +170,7 @@ app.get('/', function (req, res) {
         			  toDate = req.query.toDate;
         			  fromDate = req.query.fromDate
         		  } 
-        		  
-         		 // get results size
-                  var sizeNum = 100;
-                  if (req.query.size) { 
-                    sizeNum = req.query.size;
-                  }
-               
-                  // get result starting position
-                  var fromNum = 0;
-                  if (req.query.from) { 
-                  		fromNum = req.query.from;
-                  }
+        		 
      		  
         		  // build query
         		  bodyObject = {};
@@ -208,7 +208,7 @@ app.get('/', function (req, res) {
             bodyObject.query.function_score.query = {};
             bodyObject.query.function_score.query.query_string = {};
             bodyObject.query.function_score.query.query_string.query = query;
-            bodyObject.query.function_score.query.query_string.default_operator = "AND";
+            //bodyObject.query.function_score.query.query_string.default_operator = "AND";
             bodyObject.size = sizeNum;
             bodyObject.from = fromNum;
             

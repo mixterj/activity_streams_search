@@ -61,7 +61,7 @@ function handleResponse(req, res, error, response) {
         else {
 	        var jsonld = {};
 	        jsonld['@context'] = ["https://www.w3.org/ns/activitystreams", "http://iiif.io/api/presentation/2/context.json"];
-	        jsonld.type = "Collection";
+	        //jsonld.type = "Collection";
 	        jsonld.items = [];
 	        response.hits.hits.map(function(hit){
 	        	        jsonld.items.push(hit._source);

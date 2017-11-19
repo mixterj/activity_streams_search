@@ -220,14 +220,14 @@ app.get('/', function (req, res) {
               });
         		
           
-          } else if (req.query.action === "stats") {
+          } //else if (req.query.action === "stats") {
 
           
-              doSearch(req, res,{  
-              	    index: config.indexName,
-                  type: config.docType,
-                  stats
-                });
+              //doSearch(req, res,{  
+              //	    index: config.indexName,
+              //    type: config.docType,
+              //    stats
+              //  });
           		
             
             } else if (req.query.action === "get") {

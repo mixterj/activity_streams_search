@@ -105,7 +105,6 @@ function doPagingSearch(req, res, obj, requestPage) {
 }
 
 function doCount(req, res,obj) {
-	console.log(req)
     client.count(obj,function (error, response, status) {
     	handleResponse(req, res,error, response);
       });

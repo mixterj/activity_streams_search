@@ -213,7 +213,7 @@ app.get('/', function (req, res) {
         		  
         	  } else if (req.query.action ==="paging"){
         		  query = "*";
-        		  var sizeNum = 10000;
+        		  var sizeNum = 5000;
               if (req.query.q) { query = req.query.q; }
         		  if (req.query.page) { 
         			  var requestPage = req.query.page;

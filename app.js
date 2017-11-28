@@ -80,6 +80,26 @@ function doSearch(req, res,obj) {
       });
 }
 
+function doPagingSearch(req, res, obj, requestPage) {
+	var currentPage = 0;
+    client.search(obj,function getRightPage(error, response, status) {
+    	currentPage += 1;
+    	console.log('requested page ' + requestPage);
+    	console.log('curent page ' + currentPage);
+    	if (requestPage != currentPage) {
+    		console.log('still in search loop');
+    		client.scroll({
+    		      scrollId: response._scroll_id,
+    		      scroll: '10s'
+    		    }, getRightPage);
+    		  } else {
+    			console.log('should be done');
+    			console.log(response);
+    		    	handleResponse(req, res,error, response);
+    		  }
+      });
+}
+
 // initiate search engine get request
 function doGet(req, res,obj) {
     client.get(obj,function (error, response, status) {
@@ -126,7 +146,7 @@ app.get('/', function (req, res) {
         if (config.action[req.query.action]) {
         
         	// get results size
-            var sizeNum = 100;
+            var sizeNum = 500;
             if (req.query.size) { 
               sizeNum = req.query.size;
             }
@@ -191,6 +211,30 @@ app.get('/', function (req, res) {
                   body: bodyObject
                 });
         		  
+        	  } else if (req.query.action ==="paging"){
+        		  query = "*";
+              if (req.query.q) { query = req.query.q; }
+        		  if (req.query.page) { 
+        			  var requestPage = req.query.page;
+        		  } 		  
+        		  // build query
+        		  bodyObject = {};
+              bodyObject.query = {};
+              bodyObject.query.function_score = {};
+              bodyObject.query.function_score.query = {};
+              bodyObject.query.function_score.query.query_string = {};
+              bodyObject.query.function_score.query.query_string.query = query;
+              bodyObject.size = sizeNum;
+              console.log(JSON.stringify(bodyObject))
+        		  
+              // send the search and handle the elasticsearch response
+              doPagingSearch(req, res,{  
+            	  	index: config.indexName,
+                  type: config.docType,
+                  scroll: '10s',
+                  body: bodyObject
+                }, requestPage);
+        		  
         	  } else if (req.query.action === "search") {
 
         	// get query terms
@@ -211,6 +255,7 @@ app.get('/', function (req, res) {
             //bodyObject.query.function_score.query.query_string.default_operator = "AND";
             bodyObject.size = sizeNum;
             bodyObject.from = fromNum;
+            console.log(JSON.stringify(bodyObject))
             
             // send the search and handle the elasticsearch response
             doSearch(req, res,{  

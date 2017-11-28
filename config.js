@@ -21,7 +21,7 @@ config.action.range_search = true;
 config.action.search = true;
 config.action.get = true;
 config.action.aggregate = true;
-config.action.pagging = true;
+config.action.paging = true;
 
 config.index = {};
 

@@ -44,6 +44,7 @@ function sendResponse(res,obj) {
 
 //handle search engine response
 function handleResponse(req, res, error, response) {
+	console.log('handler req ' + req);
     if (error){
         errorObject.json = "{ \"error\": "+JSON.stringify(error)+" }";
         sendResponse(res,errorObject);
@@ -54,7 +55,10 @@ function handleResponse(req, res, error, response) {
         // CHANGE = Made content type jsonld 
         obj.contentType = config.contentTypes.jsonld; 
         obj.status = "200";
-        if (req.query.action === 'get'){
+        if (req.query.action === 'count'){
+        	   var jsonld = response;
+        }
+        else if (req.query.action === 'get'){
             var jsonld = response['_source'];
             jsonld['@context'] = ["https://www.w3.org/ns/activitystreams", "http://iiif.io/api/presentation/2/context.json"];
 	    }
@@ -97,6 +101,13 @@ function doPagingSearch(req, res, obj, requestPage) {
     			//console.log(response);
     		    	handleResponse(req, res,error, response);
     		  }
+      });
+}
+
+function doCount(req, res,obj) {
+	console.log(req)
+    client.count(obj,function (error, response, status) {
+    	handleResponse(req, res,error, response);
       });
 }
 
@@ -190,8 +201,7 @@ app.get('/', function (req, res) {
         			  toDate = req.query.toDate;
         			  fromDate = req.query.fromDate
         		  } 
-        		 
-     		  
+        	   		  
         		  // build query
         		  bodyObject = {};
         		  bodyObject.query = {};
@@ -284,7 +294,13 @@ app.get('/', function (req, res) {
               sendResponse(res,errorObject);
             }
         
-          } else {
+          } else if (req.query.action === "count") {
+        	     doCount(req, res,{  
+            	    index: config.indexName,
+                type: config.docType
+              })
+          
+            } else {
       
             // report an application error (should not get here, if known actions are 
     	    // accounted for in the if/else if conditions above)

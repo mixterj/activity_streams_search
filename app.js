@@ -83,18 +83,18 @@ function doSearch(req, res,obj) {
 function doPagingSearch(req, res, obj, requestPage) {
 	var currentPage = 0;
     client.search(obj,function getRightPage(error, response, status) {
-    	currentPage += 1;
-    	console.log('requested page ' + requestPage);
-    	console.log('curent page ' + currentPage);
+    	//currentPage += 1;
+    	//console.log('requested page ' + requestPage);
+    	//console.log('curent page ' + currentPage);
     	if (requestPage != currentPage) {
-    		console.log('still in search loop');
+    		//console.log('still in search loop');
     		client.scroll({
     		      scrollId: response._scroll_id,
     		      scroll: '10s'
     		    }, getRightPage);
     		  } else {
-    			console.log('should be done');
-    			console.log(response);
+    			//console.log('should be done');
+    			//console.log(response);
     		    	handleResponse(req, res,error, response);
     		  }
       });
@@ -226,7 +226,7 @@ app.get('/', function (req, res) {
               bodyObject.query.function_score.query.query_string = {};
               bodyObject.query.function_score.query.query_string.query = query;
               bodyObject.size = sizeNum;
-              console.log(JSON.stringify(bodyObject))
+              //console.log(JSON.stringify(bodyObject))
         		  
               // send the search and handle the elasticsearch response
               doPagingSearch(req, res,{  

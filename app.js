@@ -94,7 +94,7 @@ function doPagingSearch(req, res, obj, requestPage) {
     		    }, getRightPage);
     		  } else {
     			console.log('should be done');
-    			console.log(response);
+    			//console.log(response);
     		    	handleResponse(req, res,error, response);
     		  }
       });

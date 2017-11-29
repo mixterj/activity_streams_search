@@ -56,7 +56,8 @@ function handleResponse(req, res, error, response) {
         obj.contentType = config.contentTypes.jsonld; 
         obj.status = "200";
         if (req.query.action === 'count'){
-        	   var jsonld = response;
+        	   var jsonld = {} 
+        	   jsonld['totalAcitivies'] = response.count;
         }
         else if (req.query.action === 'get'){
             var jsonld = response['_source'];
@@ -65,7 +66,8 @@ function handleResponse(req, res, error, response) {
         else {
 	        var jsonld = {};
 	        jsonld['@context'] = ["https://www.w3.org/ns/activitystreams", "http://iiif.io/api/presentation/2/context.json"];
-	        //jsonld.type = "Collection";
+	        jsonld.type = "CollectionPage";
+	        jsonld.comment = "this Collection page is a result of a " + req.query.action + " query and represents a filtered subset of the data.";
 	        jsonld.items = [];
 	        response.hits.hits.map(function(hit){
 	        	        jsonld.items.push(hit._source);
@@ -80,6 +82,12 @@ function handleResponse(req, res, error, response) {
 // initiate search engine search request
 function doSearch(req, res,obj) {
     client.search(obj,function (error, response, status) {
+    	handleResponse(req, res,error, response);
+      });
+}
+
+function doCount(req, res,obj) {
+    client.count(obj,function (error, response, status) {
     	handleResponse(req, res,error, response);
       });
 }
@@ -104,20 +112,12 @@ function doPagingSearch(req, res, obj, requestPage) {
       });
 }
 
-function doCount(req, res,obj) {
-    client.count(obj,function (error, response, status) {
-    	handleResponse(req, res,error, response);
-      });
-}
-
 // initiate search engine get request
 function doGet(req, res,obj) {
     client.get(obj,function (error, response, status) {
     	handleResponse(req, res,error, response);
       });
 }
-
-
 
 // for all requests
 app.all('/*', function(req, res, next) {
@@ -150,7 +150,7 @@ app.get('/', function (req, res) {
       if (req.query.action) {
   
         // convert action value to lower case
-        req.query.action = req.query.action.toLowerCase();
+        //req.query.action = req.query.action.toLowerCase();
   
         // test whether the action parameter value is known
         if (config.action[req.query.action]) {
@@ -180,7 +180,7 @@ app.get('/', function (req, res) {
         		  bodyObject.aggs = {};
         		  bodyObject.aggs.range = {};
         		  bodyObject.aggs.range.date_range = {};
-        		  bodyObject.aggs.range.date_range.field = "startTime";
+        		  bodyObject.aggs.range.date_range.field = "endTime";
         		  bodyObject.aggs.range.date_range.format = "strict_date_optional_time||epoch_millis";
         		  bodyObject.aggs.range.date_range.ranges = [];
         		  bodyObject.aggs.range.date_range.ranges.push(bucket1Date);
@@ -207,9 +207,9 @@ app.get('/', function (req, res) {
         		  bodyObject.query.filtered = {};
         		  bodyObject.query.filtered.filter = {};
         		  bodyObject.query.filtered.filter.range = {};
-        		  bodyObject.query.filtered.filter.range.startTime = {};
-        		  bodyObject.query.filtered.filter.range.startTime.gte = fromDate;
-        		  bodyObject.query.filtered.filter.range.startTime.lte = toDate;
+        		  bodyObject.query.filtered.filter.range.endTime = {};
+        		  bodyObject.query.filtered.filter.range.endTime.gte = fromDate;
+        		  bodyObject.query.filtered.filter.range.endTime.lte = toDate;
         		  bodyObject.size = sizeNum;
         		  bodyObject.from = fromNum;
         		  
@@ -219,31 +219,6 @@ app.get('/', function (req, res) {
                   type: config.docType,
                   body: bodyObject
                 });
-        		  
-        	  } else if (req.query.action ==="paging"){
-        		  query = "*";
-        		  var sizeNum = 5000;
-              if (req.query.q) { query = req.query.q; }
-        		  if (req.query.page) { 
-        			  var requestPage = req.query.page;
-        		  } 		  
-        		  // build query
-        		  bodyObject = {};
-              bodyObject.query = {};
-              bodyObject.query.function_score = {};
-              bodyObject.query.function_score.query = {};
-              bodyObject.query.function_score.query.query_string = {};
-              bodyObject.query.function_score.query.query_string.query = query;
-              bodyObject.size = sizeNum;
-              //console.log(JSON.stringify(bodyObject))
-        		  
-              // send the search and handle the elasticsearch response
-              doPagingSearch(req, res,{  
-            	  	index: config.indexName,
-                  type: config.docType,
-                  scroll: '10s',
-                  body: bodyObject
-                }, requestPage);
         		  
         	  } else if (req.query.action === "search") {
 
@@ -258,11 +233,8 @@ app.get('/', function (req, res) {
             // build the request body
             bodyObject = {};
             bodyObject.query = {};
-            bodyObject.query.function_score = {};
-            bodyObject.query.function_score.query = {};
-            bodyObject.query.function_score.query.query_string = {};
-            bodyObject.query.function_score.query.query_string.query = query;
-            //bodyObject.query.function_score.query.query_string.default_operator = "AND";
+            bodyObject.query.term = {};
+            bodyObject.query.term.type = query;
             bodyObject.size = sizeNum;
             bodyObject.from = fromNum;
             console.log(JSON.stringify(bodyObject))
@@ -327,6 +299,7 @@ app.get('/', function (req, res) {
 
 //If no route is matched by now, it must be an invalid request
 app.use(function(req, res) {
+	console.log('failed here')
   sendResponse(res,config.errorObject["400"]);
 });
 

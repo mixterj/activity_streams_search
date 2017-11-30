@@ -23,7 +23,7 @@ This is a proof of concept and provided 'as is'.
 
 ### Running the API code
 
-* Navigate to the parent directory and run `node install`. This will download all of the code dependencies
+* Navigate to the parent directory and run `npm install`. This will download all of the code dependencies
 * In the config.js modify the config.searchServer, config.searchPort, config.indexName, and config.docType to match your ElasticSearch installation and index/type names.
 
 * Run `node app.js` to start the API on port 3061
